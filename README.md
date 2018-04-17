@@ -8,11 +8,11 @@ Plugin can initialise from default syntax markup or from object with options
 ```
 <div class="select">
   <input>
+  <div class="select__arrow">
+  </div>
   <div class="select__value">
   </div>
   <div class="select__body">
-  </div>
-  <div class="select__arrow">
   </div>
 </div>
 ```
@@ -24,7 +24,7 @@ Plugin can initialise from default syntax markup or from object with options
 4. `scroll` `true|false` - Using scroll in options list. Default **false**
 5. `arrow` `true|false` - Added arrow on select field. Default **false**
 6. `arrowPath` `*String*` - Path to arrow SVG. Default ''
-7. `options` `[{ID:__, NAME:__},{ID:__, NAME:__},{ID:__, NAME:__}...]` - Set of options. Default []
+7. `items` `[{ID:__, NAME:__},{ID:__, NAME:__},{ID:__, NAME:__}...]` - Set of options. Default []
 8. `selectClass` `className` - Additional classes to select block. Can be multiple. Default ''
 9. `optionClass` `className` - Additional classes to options block. Can be multiple. Default ''
 10. `inputClass` `className` - Additional classes to input block. Can be multiple. Default ''
@@ -49,3 +49,26 @@ scope = {
 3. `onListOpened` - Runs after options list is opened
 4. `onInitEnd` - Runs after full initialise
 5. `beforeInit` - Runs before init function
+
+# Example
+1.`$('.select').SelectMe({items:[{ID:1, NAME:'NUM1'},{ID:2, NAME:'NUM2'}]})`
+from
+```
+<div class="select">
+```
+2.`$('.select').SelectMe({fromMarkup: true})`
+from
+```
+<div class="select">
+  <input type="hidden">
+  <div class="select__arrow">
+  </div>
+  <div class="select__value">
+    Choose item
+  </div>
+  <div class="select__body">
+    <div class="select__item" data-id="1">NUM1</div>
+    <div class="select__item" data-id="2">NUM2</div>
+  </div>
+</div>
+```

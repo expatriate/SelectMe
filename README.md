@@ -52,11 +52,13 @@ scope = {
 
 # Example
 1.`$('.select').SelectMe({items:[{ID:1, NAME:'NUM1'},{ID:2, NAME:'NUM2'}]})`
+
 from
 ```
-<div class="select">
+<div class="select"><div>
 ```
 2.`$('.select').SelectMe({fromMarkup: true})`
+
 from
 ```
 <div class="select">

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SelectMe Test</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script type="text/javascript" charset="UTF-8" src="js/mCustomScrollbar.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="js/selectme.js"></script>
+    <link rel="stylesheet" href="css/jquery.mCustomScrollbar.css" />
+    <style type="text/css">
+        body{
+            background: black;        
+        }
+        .select__body.open, .dropdown__body.open {
+            opacity: 1;
+            visibility: visible;
+            z-index: 10000;
+        }
+        .select__arrow .icon, .dropdown__arrow .icon {
+            height: 10px;
+            transition: all 300ms ease-in-out;
+            width: 13px;
+        }
+
+        svg:not(:root) {
+            overflow: hidden;
+        }
+        .icon_small {
+            width: 24px;
+            height: 24px;
+        }
+        .icon_blue {
+            color: #00549e;
+        }
+        .icon-angle-down {
+            font-size: 0.8rem;
+            width: 1.625em;
+        }
+        .icon {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            fill: currentColor;
+        }
+        .select, .dropdown {
+            position: relative;
+            max-width: 694px;
+            width: 100%;
+        }
+        .select__value_type-2, .dropdown__value_type-2 {
+            border: solid 2px #ccddec;
+            color: #6C7682;
+            font-size: 22px;
+            font-weight: 300;
+            line-height: 1;
+            max-height: 64px;
+            padding-bottom: 19px;
+            padding-top: 19px;
+            min-width: 256px;
+        }
+
+        .select__value, .dropdown__value {
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 22px;
+            font-weight: 300;
+            min-width: 352px;
+            overflow: hidden;
+            padding: 17px 54px 16px 24px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+        }
+        .select__260p .select__body, .dropdown__260p .select__body {
+            max-height: 264px;
+        }
+
+        .select__body, .dropdown__body {
+            background-color: #ffffff;
+            border: 2px solid #ccddec;
+            border-bottom-left-radius: 4px;
+            border-bottom-right-radius: 4px;
+            display: block;
+            left: 0;
+            /* max-height: 370px; */
+            min-width: 100%;
+            opacity: 0;
+            padding-bottom: 8px;
+            padding-top: 8px;
+            position: absolute;
+            top: calc(100% - 2px);
+            transition: all .3s ease;
+            visibility: hidden;
+            z-index: -1;
+        }
+        .select__arrow, .dropdown__arrow {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            -webkit-transform: translateY(-50%);
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+        .select__item, .dropdown__item {
+            color: #303239;
+            display: block;
+            cursor: pointer;
+            font-size: 22px;
+            font-weight: 300;
+            line-height: 1.33;
+            padding: 16px 20px;
+        }
+    </style>
+    <script type="text/javascript">
+        var data = [{
+                ID: 1,
+                NAME: 'NUMBER1',
+            },{
+                ID: 2,
+                NAME: 'NUMBER2',
+            },{
+                ID: 3,
+                NAME: 'NUMBER3',
+            },{
+                ID: 4,
+                NAME: 'NUMBER4',
+            },{
+                ID: 5,
+                NAME: 'NUMBER5',
+            },{
+                ID: 6,
+                NAME: 'NUMBER6',
+            },{
+                ID: 7,
+                NAME: 'NUMBER7',
+            },{
+                ID: 8,
+                NAME: 'NUMBER8',
+        }]
+    </script>
+</head>
+<body>
+    <div class="select select__260p">
+        <input class="js-select-category-inp" type="hidden">
+        <div class="select__value select__value_type-2">Тарифы.Ставки.Котировки</div>
+        <div class="select__body js-scroll-select">
+            <div class="select__item" data-value="532" role="option">Офисы</div>
+            <div class="select__item" data-value="581" role="option">Дистанционные сервисы</div>
+            <div class="select__item" data-value="722" role="option">Кредитование</div>
+            <div class="select__item" data-value="738" role="option">Партнерские программы страхования</div>
+            <div class="select__item" data-value="886" role="option">Услуги по выплате дивидендов</div>
+            <div class="select__item" data-value="120" role="option">Вклады</div>
+            <div class="select__item" data-value="895" role="option">Перечень страховых организаций и Требования к страховщикам</div>
+            <div class="select__item" data-value="125" role="option">Тарифы.Ставки.Котировки</div>
+            <div class="select__item" data-value="909" role="option">Газпромбанк Премиум</div>
+        </div>
+
+        <div class="select__arrow">
+            <div class="select__icon">
+            </div>
+            <svg class="icon icon-angle-down icon_block--icon icon_blue icon_small">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-angle-down icon_block--icon icon_blue icon_small" viewBox="0 0 13 8" id="angle-down" width="100%" height="100%">
+                    <path d="M2.207.793A1 1 0 1 0 .793 2.207l4.999 5a1 1 0 0 0 1.414 0l5.001-5A1 1 0 1 0 10.793.793L6.499 5.086 2.207.793z"></path>
+                </svg>
+            </svg>
+        </div>
+    </div>
+
+    <div class="select selectMe">
+    </div>
+    <script type="text/javascript">
+        $(document).ready(() => {
+            $('.select:not(.selectMe)').SelectMe({
+                fromMarkup: true,
+            }).on('onSelectedValue', function(e, data) {
+                console.log(e)
+                console.log(data)
+            });
+            /*$('.selectMe').SelectMe({
+                fromMarkup: false,
+                selectClass: 'select__value_type-2',
+                options: data,
+            }).on('onSelectedValue', function(e, data) {
+                console.log(e)
+                console.log(data)
+            });*/
+        })
+    </script>
+</body>
+</html>

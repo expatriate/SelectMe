@@ -1,30 +1,36 @@
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 /*
   jQuery Select plugin
-  DKarbushev 04.2018
+  DKarbushev
 */
 (function ($) {
 
-    let methods = {
-        init : function(options) {
-            return this.each(function() {
-                let selectme = $(this); // Parent element
+    var globalOpened = false;
+
+    var methods = {
+        init: function init(options) {
+            return this.each(function () {
+                var $this = $(this); // Parent element
 
                 // Language options
-                let mainLangMess = {
-                    'ru' : {
+                var mainLangMess = {
+                    'ru': {
                         'chooseAriaLabel': 'Выберите из списка',
                         'chooseLabel': 'Выберите из списка',
-                        'svgTitle': 'Стрелка выбора списка',
+                        'svgTitle': 'Стрелка выбора списка'
                     },
-                    'en' : {
+                    'en': {
                         'chooseAriaLabel': 'Choose from options',
                         'chooseLabel': 'Choose from options',
-                        'svgTitle': 'Select state arrow',
+                        'svgTitle': 'Select state arrow'
                     }
-                }
+                };
 
-                let default_options = {
-                    options: [], // Format [{ID:NAME:}, {ID:NAME}...]
+                var default_options = {
+                    items: [], // Format [{ID:NAME:}, {ID:NAME}...]
                     aria: true,
                     confirm: false,
                     closeOnClick: true,
@@ -39,282 +45,290 @@
                     arrowClass: 'icon icon-angle-down icon_block--icon icon_blue icon_small',
                     lang: 'ru',
                     selectOnRender: false,
-                    langMess: {},
-                }
+                    langMess: {}
 
-                // variables
-                let scope = {
-                        value: '',
-                        opened: false,
-                        optionsCount: 0,
-                        id: '',
-                        valid: true
-                    }
+                    // variables
+                };var scope = {
+                    value: '',
+                    opened: false,
+                    optionsCount: 0,
+                    id: '',
+                    valid: true
 
-                function setOptions(options) {
-                    for (let key in options) {
-                        //Check not empty value
-                        let empty_test = options[key] + '';
-                        if (empty_test) {
-                            if (key in default_options) {
-                                // Validation tests
-                                scope.valid = false;
-                                switch (key) {
-                                    default:
-                                        scope.valid = true;
+                    // Setting options
+                };for (var key in options) {
+                    //Check not empty value
+                    var empty_test = options[key] + '';
+                    if (empty_test) {
+                        if (key in default_options) {
+                            // Validation tests
+                            scope.valid = false;
+                            switch (key) {
+                                default:
+                                    scope.valid = true;
                                     break;
-                                };
-                                scope.valid = true;
-                                if (scope.valid) {
-                                    default_options[key] = options[key]; // Update default_options values
-                                }
+                            };
+                            scope.valid = true;
+                            if (scope.valid) {
+                                default_options[key] = options[key]; // Update default_options values
                             }
                         }
                     }
-                    for (let key in default_options) {
-                        if (selectme.data(key.toLowerCase())) {
-                            default_options[key] = selectme.data(key.toLowerCase());
-                        }
-                    }
-                    default_options.langMess = mainLangMess[default_options.lang]
-                };                
-
-                function addListeners() {
-                    selectme.control.off('click').on('click', (e) => {
-                        console.log('click')
-                        selectme.SelectMe('toggleOpen', e);
-                        //selectOption(e.target);
-                    });
-                    selectme.control.off('keypress').on('keypress', (e) => {
-                        console.log('keypress')
-                        selectme.SelectMe('toggleOpen', e);
-                        //selectOption(e.target);
-                    });
-                    selectme.options.unbind('click').on('click', (e) => {
-                        selectme.SelectMe('selectOption', e.target);
-                        //selectOption(e.target);
-                    });
-
-                    document.body.addEventListener('click', (e) => {
-                        if (scope.opened && !$(e.target).parents('.select__item').length && !$(e.target).hasClass('select__value')) {
-                            scope.opened = false;
-                            selectme.SelectMe('closeOpened');
-                            //closeOpened()
-                        }
-                    });
-                    document.getElementById(scope.id).addEventListener('keydown', (e) => {
-                        if (scope.opened) {
-                            if (event.which === 38 || event.which === 40 || event.which === 13) {
-                                selectme.SelectMe('handleKeypress', e);
-                                //handleKeypress(e);
-                            }
-                            if (event.which === 27 || event.which === 9) {
-                                if (!$(e.target).parents('.select__item').length) {
-                                    selectme.SelectMe('close');
-                                    //close();
-                                    scope.opened = false;
-                                }
-                            }
-                        }
-                    });
-                }
-                function initialise() {
-                    scope.id = `select_${Date.now().toString().substr(5)}`;
-                    selectme.attr('id', scope.id);
-
-                    selectme.trigger('onInitStart', scope);
-
-                    if (default_options.fromMarkup) {
-                        selectme.input = selectme.find('input');
-                        selectme.control = selectme.find('.select__value');
-                        selectme.body = selectme.find('.select__body');
-                        selectme.options = selectme.find('.select__item');
-                        scope.optionsCount = this.options.length;
-                        selectme.checkboxes = [];
-                    } else {
-                        selectme.SelectMe('renderEmptyMarkup', selectme);
-
-                        selectme.input = selectme.find('input');
-                        selectme.control = selectme.find('.select__value');
-                        selectme.body = selectme.find('.select__body');
-                        selectme.options = selectme.find('.select__item');
-
-                        selectme.SelectMe('renderOptions');
-                    }
-                    this.input = selectme.input;
-                    this.control = selectme.control;
-                    this.body = selectme.body;
-                    this.options = selectme.options;
-
-                    if (default_options.scroll) {
-                        selectme.body.mCustomScrollbar({
-                            advanced: {
-                                autoScrollOnFocus: true,
-                                updateOnContentResize: true
-                            }
-                        });
-                    }
-
-                    if (default_options.selectOnRender) {
-                        selectme.SelectMe('selectOption', selectme.options.first());
-                    } else {
-                        selectme.SelectMe('selectOption');
-                    }
-
-                    // Add ids for options elements
-                    selectme.SelectMe('addPreinstalledAttrs');
-                    //addPreinstalledAttrs();
-
-                    // Add aria-tags
-                    selectme.SelectMe('addAriaTags');
-                    //addAriaTags();
-
-                    selectme.trigger('onInitEnd', scope);
                 }
 
-                setOptions(options);
+                for (var _key in default_options) {
+                    if ($this.data(_key.toLowerCase())) {
+                        default_options[_key] = $this.data(_key.toLowerCase());
+                    }
+                }
 
-                let data = selectme.data('selectme');
-                if (!data) { 
-                    selectme.data('selectme', {
-                        target : selectme,
+                default_options.langMess = mainLangMess[default_options.lang];
+
+                // Add data object to this element
+                var data = $this.data('selectme');
+                if (!data) {
+                    $this.data('selectme', {
+                        target: $this,
                         options: default_options,
                         scope: scope
                     });
-                    data = selectme.data('selectme');
                 }
 
-                initialise();
-                addListeners();
+                // Main init
+                $this.trigger('onInitStart', $this);
 
+                scope.id = 'select_' + Date.now().toString().substr(5);
+                $this.attr('id', scope.id);
+
+                if (!default_options.fromMarkup) {
+                    $this.SelectMe('renderEmptyMarkup');
+                    $this.SelectMe('renderOptions');
+                }
+
+                if (default_options.scroll) {
+                    $this.find('.select__body').mCustomScrollbar({
+                        advanced: {
+                            autoScrollOnFocus: true,
+                            updateOnContentResize: true
+                        }
+                    });
+                }
+
+                // Fill selectme.data(target) object
+                $this.SelectMe('fillDataObject');
+                $this.SelectMe('addListeners');
+
+                // Add ids for options elements
+                $this.SelectMe('addPreinstalledAttrs');
+
+                // Add aria-tags
+                $this.SelectMe('addAriaTags');
+
+                $this.trigger('onInitEnd', scope);
+
+                if (default_options.selectOnRender) {
+                    $this.SelectMe('selectOption', $this.data('selectme').target.items.first());
+                } else {
+                    $this.SelectMe('selectOption');
+                }
             });
         },
-        renderEmptyMarkup: function(selectme) {
+        fillDataObject: function fillDataObject() {
+            var selectme = $(this);
+            var data = $(this).data('selectme');
+
+            data.target.input = selectme.find('input');
+            data.target.control = selectme.find('.select__value');
+            data.target.body = selectme.find('.select__body');
+            data.target.checkboxes = [];
+            data.target.items = selectme.find('.select__item');
+        },
+        addListeners: function addListeners() {
+            var selectme = $(this);
+            var data = $(this).data('selectme');
+            data.target.control.off('click').on('click', function (e) {
+                //console.log('click')
+                selectme.SelectMe('toggleOpen', e);
+            });
+            data.target.control.off('keypress').on('keypress', function (e) {
+                //console.log('keypress')
+                selectme.SelectMe('toggleOpen', e);
+            });
+            data.target.items.unbind('click').on('click', function (e) {
+                selectme.SelectMe('selectOption', e.target);
+            });
+
+            document.body.addEventListener('click', function (e) {
+                if (data.scope.opened && !$(e.target).parents('.select__item').length && !$(e.target).hasClass('select__value') || globalOpened) {
+                    data.scope.opened = false;
+                    selectme.SelectMe('closeOpened');
+                    globalOpened = false;
+                }
+            });
+            //console.log(data)
+            selectme.off('keydown').on('keydown', function (e) {
+                if (data.scope.opened || globalOpened) {
+                    if (event.which === 38 || event.which === 40 || event.which === 13 || event.which === 32) {
+                        selectme.SelectMe('handleKeypress', e);
+                    }
+                    if (event.which === 27 || event.which === 9) {
+                        if (!$(e.target).parents('.select__item').length) {
+                            selectme.SelectMe('close');
+                            data.scope.opened = false;
+                            globalOpened = false;
+                        }
+                    }
+                }
+            });
+        },
+        renderEmptyMarkup: function renderEmptyMarkup() {
+            var selectme = $(this);
+            var data = selectme.data('selectme');
             // Clear main container
             selectme.empty();
-            let options = selectme.data('selectme').options;
-            //let langMess = mainLangMess[options.lang];
-            let defaultArrow = `
-                                <svg xmlns="http://www.w3.org/2000/svg" class="${options.arrowClass}" viewBox="0 0 13 8" id="angle-down" width="100%" height="100%">
-                                    <title>${options.langMess.svgTitle}</title>
-                                    <path d="M2.207.793A1 1 0 1 0 .793 2.207l4.999 5a1 1 0 0 0 1.414 0l5.001-5A1 1 0 1 0 10.793.793L6.499 5.086 2.207.793z"></path>
-                                </svg>`;
-            let arrowSvg = !options.arrowPath ? defaultArrow : `<svg class="${options.arrowClass}"><use xlink:href="${options.arrowPath}"></use></svg>`;
-            let template = `
-                    <input ${!options.inputClass ? '' : `class="${options.inputClass}"` } type="hidden">
-                    <div class="select__value ${options.selectClass}">
-                    </div>
-                    <div class="select__body js-scroll-select">
-                    </div>
-                    ${options.arrow === true ? `
-                    <div class="select__arrow">
-                        ${arrowSvg}
-                    </div>
-                        ` : ``}`
+
+            var defaultArrow = '\n                                <svg xmlns="http://www.w3.org/2000/svg" class="' + data.options.arrowClass + '" viewBox="0 0 13 8" id="angle-down" width="100%" height="100%">\n                                    <title>' + data.options.langMess.svgTitle + '</title>\n                                    <path d="M2.207.793A1 1 0 1 0 .793 2.207l4.999 5a1 1 0 0 0 1.414 0l5.001-5A1 1 0 1 0 10.793.793L6.499 5.086 2.207.793z"></path>\n                                </svg>';
+            var arrowSvg = !data.options.arrowPath ? defaultArrow : '<svg class="' + data.options.arrowClass + '"><use xlink:href="' + data.options.arrowPath + '"></use></svg>';
+            var template = '\n                    <input ' + (!data.options.inputClass ? '' : 'class="' + data.options.inputClass + '"') + ' type="hidden">\n                    <div class="select__value ' + data.options.selectClass + '">\n                    </div>\n                    <div class="select__body js-scroll-select">\n                    </div>\n                    ' + (data.options.arrow === true ? '\n                    <div class="select__arrow">\n                        ' + arrowSvg + '\n                    </div>\n                        ' : '');
             selectme.append($(template));
 
-            if (options.wrapClass.length) {
-                let classes = options.wrapClass.split(' ');
+            if (data.options.wrapClass.length) {
+                var classes = data.options.wrapClass.split(' ');
                 for (tempClass in classes) {
                     selectme.addClass(tempClass);
                 }
             }
         },
-        addPreinstalledAttrs: function() {
+        addPreinstalledAttrs: function addPreinstalledAttrs() {
+            var selectme = $(this);
+            var data = selectme.data('selectme');
+
             // Add ID for options
-            if (this.options.length) {
-                this.options.each((index, item) => {
-                    $(item).prop('id', `option_${Date.now().toString().substr(5)}_${$(item).data('value')}`);
+            if (data.target.items.length) {
+                data.target.items.each(function (index, item) {
+                    $(item).prop('id', 'option_' + Date.now().toString().substr(5) + '_' + $(item).data('value'));
                 });
             }
         },
-        addAriaTags: function() {
-            let selectme = $(this);
-            this.input.attr('aria-label', 'Value');
-            this.control.attr('tabindex', 0)
-                        .attr('role', 'button')
-                        .attr('aria-haspopup', 'listbox')
-                        .attr('aria-label', selectme.data('selectme').options.langMess.chooseAriaLabel);
-            this.body.attr('role', 'listbox')
-                    .attr('tabindex', '-1')
-                    .attr('aria-label', selectme.data('selectme').options.langMess.chooseAriaLabel);
-            if (this.body.find('.active').length) {
-                this.body.attr('aria-activedescendant', this.body.find('.active').prop('id'));
+        addAriaTags: function addAriaTags() {
+            var selectme = $(this);
+            var data = selectme.data('selectme');
+
+            data.target.input.attr('aria-label', 'Value');
+            data.target.control.attr('tabindex', 0).attr('role', 'button').attr('aria-haspopup', 'listbox').attr('aria-label', data.options.langMess.chooseAriaLabel);
+            data.target.body.attr('role', 'listbox').attr('tabindex', '-1').attr('aria-label', data.options.langMess.chooseAriaLabel);
+            if (data.target.body.find('.active').length) {
+                data.target.body.attr('aria-activedescendant', data.target.body.find('.active').prop('id'));
             }
         },
-        renderOptions: function() {
-            let selectme = $(this);
-            console.log('renderOptions', selectme);
-            let default_options = selectme.data('selectme').options, optionsObj = selectme.data('selectme').options.options, blockOptions = '';;
+        renderOptions: function renderOptions() {
+            var selectme = $(this);
+            var data = selectme.data('selectme');
+
+            var optionsObj = data.options.items,
+                blockOptions = '';
             // If options is array - convert to object
-            if (default_options.options && Array.isArray(default_options.options)) {
-                optionsObj = default_options.options.reduce(function(acc, cur, i) {
+            if (data.options && Array.isArray(data.options)) {
+                optionsObj = data.options.reduce(function (acc, cur, i) {
                     acc[i] = cur;
                     return acc;
                 }, {});
             }
-            this.body.empty();
+            selectme.find('.select__body').empty();
 
-            $.each(optionsObj, function(index, item) {
-                blockOptions +=`<div class="select__item" data-value="${item.ID}" role="option">${item.NAME}</div>`;
-                selectme.data('selectme').scope.optionsCount++;
+            $.each(optionsObj, function (index, item) {
+                blockOptions += '<div class="select__item" data-value="' + item.ID + '" role="option">' + item.NAME + '</div>';
+                data.scope.optionsCount++;
             });
-            this.body.append(blockOptions);
-            this.options = this.find('.select__item');
+            selectme.find('.select__body').append(blockOptions);
         },
-        selectOption: function(item) {
+        selectOption: function selectOption(item) {
             // if havent item
-            let selectme = $(this);
-            console.log('selectOption', selectme);
+            var selectme = $(this);
+            var data = selectme.data('selectme');
+            //console.log('selectOption', selectme);
 
             if (!item) {
-                this.control.html(this.langMess.chooseLabel);
-                this.input.val('');
-                this.options.find('.active').removeClass('active');
-                selectme.data('selectme').scope.value = '';
+                data.target.control.html(selectme.data('selectme').options.langMess.chooseLabel);
+                data.target.input.val('');
+                data.target.items.find('.active').removeClass('active');
+                data.scope.value = '';
             } else {
-                this.control.html($(item).html());
-                this.input.val($(item).data('value'));
-                selectme.data('selectme').scope.value = this.input.val();
-                this.options.find('.active').removeClass('active');
+                data.target.control.html($(item).html());
+                data.target.input.val($(item).data('value'));
+                data.scope.value = data.target.input.val();
+                data.target.body.find('.active').removeClass('active');
                 $(item).addClass('active');
-                this.body.attr('aria-activedescendant', $(item).prop('id'));
-                selectme.trigger('onSelectedValue', selectme.data('selectme').scope.value);
+                data.target.body.attr('aria-activedescendant', $(item).prop('id'));
+                selectme.trigger('onSelectedValue', data.scope.value);
             }
         },
-        toggleOpen: function(e) {
+        addNewItems: function addNewItems(newItems) {
+            var selectme = $(this);
+            var data = selectme.data('selectme');
+
+            data.options.items = newItems;
+
+            selectme.SelectMe('renderOptions');
+
+            if (data.options.scroll) {
+                selectme.find('.select__body').removeClass('mCustomScrollbar _mCS_2 mCS_no_scrollbar').removeData('mCS');
+                selectme.find('.select__body').mCustomScrollbar({
+                    advanced: {
+                        autoScrollOnFocus: true,
+                        updateOnContentResize: true
+                    }
+                });
+            }
+
+            selectme.SelectMe('fillDataObject');
+            selectme.SelectMe('addListeners');
+
+            // Add ids for options elements
+            selectme.SelectMe('addPreinstalledAttrs');
+
+            // Add aria-tags
+            selectme.SelectMe('addAriaTags');
+
+            if (data.options.selectOnRender) {
+                selectme.SelectMe('selectOption', data.target.items.first());
+            } else {
+                selectme.SelectMe('selectOption');
+            }
+        },
+        toggleOpen: function toggleOpen(e) {
             e.preventDefault();
-            let selectme = $(this);
-            console.log('toggleOpen', selectme);
+            var selectme = $(this);
+            //console.log('toggleOpen', selectme);
             if (e.keyCode === 13 || e.keyCode === 32 || e.type === 'click') {
-                //console.log(selectme.data('selectme'))
+                ////console.log(selectme.data('selectme'))
                 selectme.data('selectme').scope.opened = !selectme.data('selectme').scope.opened;
                 selectme.SelectMe('closeOpened');
                 //closeOpened();
-                
+
                 return false;
             }
-        }, 
-        close: function() {
-            let selectme = $(this);
-            console.log('close', selectme);
+        },
+        close: function close() {
+            var selectme = $(this);
+            //console.log('close', selectme);
             selectme.removeClass('open');
             selectme.find('.select__body').removeClass('open').attr('aria-activedescendant', selectme.find('.select__body').find('.active').prop('id'));
             selectme.find('.select__value').removeAttr('aria-expanded');
             selectme.trigger('onListClosed', selectme.data('selectme').scope);
         },
-        open: function() {
-            let selectme = $(this);
-            console.log('open', selectme);
+        open: function open() {
+            var selectme = $(this);
+            //console.log('open', selectme);
             selectme.addClass('open');
             selectme.find('.select__body').addClass('open');
 
             selectme.find('.select__value').attr('aria-expanded', 'true');
             selectme.trigger('onListOpened', selectme.data('selectme').scope);
         },
-        closeOpened: function() {
-            let selectme = $(this);
-            console.log('closeOpened', selectme);
+        closeOpened: function closeOpened() {
+            var selectme = $(this);
+            //console.log('closeOpened', selectme);
             if (!selectme.data('selectme').scope.opened) {
                 selectme.SelectMe('close');
                 //close();
@@ -323,22 +337,22 @@
                 //open();
             }
         },
-        handleKeypress: function(e) {
+        handleKeypress: function handleKeypress(e) {
             e.preventDefault();
 
-            let selectme = $(this);
-            console.log('handleKeypress', selectme);
-            
-            let select = selectme;
-            let activeElement = select.find('.select__item.active');
-            let firstElement = select.find('.select__item').first();
-            let lastElement = select.find('.select__item').last();
-            let allElements = select.find('.select__item');
-            let elBody = select.find('.select__body');
-            let currentElement = activeElement;
-            
+            var selectme = $(this);
+            //console.log('handleKeypress', selectme);
+
+            var select = selectme;
+            var activeElement = select.find('.select__item.active');
+            var firstElement = select.find('.select__item').first();
+            var lastElement = select.find('.select__item').last();
+            var allElements = select.find('.select__item');
+            var elBody = select.find('.select__body');
+            var currentElement = activeElement;
+
             if (activeElement.length > 0) {
-                
+
                 switch (event.which) {
                     case 38:
                         if (!currentElement.is(':first-child')) {
@@ -361,8 +375,11 @@
                                 select.find('.select__body').mCustomScrollbar('scrollTo', currentElement);
                             }
                         }
-                    break;
+                        break;
                     case 13:
+                        currentElement.trigger('click');
+                        break;
+                    case 32:
                         currentElement.trigger('click');
                         break;
                 }
@@ -372,19 +389,19 @@
                 if (selectme.data('selectme').options.scroll) {
                     select.find('.select__body').mCustomScrollbar('scrollTo', activeElement);
                 }
-            }        
+            }
         }
-    }
+    };
 
-    $.fn.SelectMe = function( method ) {
+    $.fn.SelectMe = function (method) {
 
         if (methods[method]) {
-            return methods[method].apply( this, Array.prototype.slice.call( arguments, 1 ));
-        } else if ( typeof method === 'object' || ! method ) {
-            return methods.init.apply( this, arguments );
+            return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
+        } else if ((typeof method === 'undefined' ? 'undefined' : _typeof(method)) === 'object' || !method) {
+            return methods.init.apply(this, arguments);
         } else {
-            $.error( 'Метод ' +  method + ' не существует в jQuery.SelectMe' );
-        }   
+            $.error('Метод ' + method + ' не существует в jQuery.SelectMe');
+        }
     };
-    
-}(jQuery));
+})(jQuery);
+//# sourceMappingURL=select.js.map
